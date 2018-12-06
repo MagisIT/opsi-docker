@@ -1,0 +1,17 @@
+#######################################################################
+# This file contains the services requried in the install and run step
+#######################################################################
+version: "2.3"
+services:
+    opsi-mariadb:
+        image: mysql:5.7
+        container_name: opsi-mariadb
+        volumes:
+            - /srv/config/opsi-mariadb/var:/var/lib/mysql
+        environment:
+            - MYSQL_ROOT_PASSWORD=123456
+            - MYSQL_DATABASE=opsi
+            - MYSQL_USER=opsi
+            - MYSQL_PASSWORD=123456
+        restart: always
+        command: --sql-mode=""
