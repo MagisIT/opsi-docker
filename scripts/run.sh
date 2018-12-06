@@ -68,6 +68,9 @@ addOpsiUser $OPSI_USER $OPSI_PASSWORD
 echo "Set file permissions..."
 opsi-setup --set-rights
 
+# Init current config. Is required so that all users like pcpatch exists in the container
+opsi-setup --init-current-config --ip-address $EXTERNAL_IP
+
 # Add graceful stop on docker stop
 trap stop SIGTERM SIGINT
 
