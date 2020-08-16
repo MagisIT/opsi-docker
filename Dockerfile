@@ -7,16 +7,12 @@
 # Use debian stretch latest image
 FROM debian:buster
 
-# Install required basis packages
-RUN apt-get update && apt-get -y install supervisor rsyslog netcat wget host pigz samba samba-common smbclient cifs-utils openssh-server debconf-utils cpio ssh passwd patch winbind libnss-winbind libpam-winbind cron acl
-
 # Gucci version
 ARG GUCCI_VERSION=1.2.2
 
-# Install gucci templating
-RUN wget -q https://github.com/noqcks/gucci/releases/download/${GUCCI_VERSION}/gucci-v${GUCCI_VERSION}-linux-amd64 && \
-    chmod +x gucci-v${GUCCI_VERSION}-linux-amd64 && \
-    mv gucci-v${GUCCI_VERSION}-linux-amd64 /usr/local/bin/gucci
+RUN apt-get update && \
+	apt-get -y install --no-install-recommends wget gnupg2 ca-certificates && \
+	rm -rf /var/lib/apt/lists/*
 
 # Add OPSI-sources to apt
 RUN echo "deb http://download.opensuse.org/repositories/home:/uibmz:/opsi:/4.1:/stable/Debian_10/ /" > /etc/apt/sources.list.d/opsi.list
@@ -37,14 +33,19 @@ RUN echo "opsiconfd opsiconfd/cert_locality string Internet" | debconf-set-selec
 	echo "opsiconfd opsiconfd/cert_unit string" | debconf-set-selections && \
 	echo "opsiconfd opsiconfd/cert_email string" | debconf-set-selections
 
-# Install opsi packages
-RUN apt-get update && apt-get -y install opsi-tftpd-hpa opsi-server opsi-configed opsi-windows-support
-
-# Move OPSI files to different directory to prevent overwrite from volumes
-RUN mv /etc/opsi /etc/opsi-default && mv /var/lib/opsi /var/lib/opsi-default && mv /tftpboot /tftpboot-default && mv /etc/samba /etc/samba-default
-
-# Allow ssh root access
-RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/g' /etc/ssh/sshd_config
+# Install required basis packages
+RUN apt-get update && \
+	apt-get -y install supervisor rsyslog netcat wget host pigz samba samba-common smbclient cifs-utils \
+	openssh-server debconf-utils cpio ssh passwd patch winbind libnss-winbind libpam-winbind cron acl \
+	opsi-tftpd-hpa opsi-server opsi-configed opsi-windows-support && \
+	wget -q https://github.com/noqcks/gucci/releases/download/${GUCCI_VERSION}/gucci-v${GUCCI_VERSION}-linux-amd64 && \
+	chmod +x gucci-v${GUCCI_VERSION}-linux-amd64 && \
+	mv gucci-v${GUCCI_VERSION}-linux-amd64 /usr/local/bin/gucci && \
+	mv /etc/opsi /etc/opsi-default && \
+	mv /var/lib/opsi /var/lib/opsi-default && \
+	mv /tftpboot /tftpboot-default && \
+	mv /etc/samba /etc/samba-default && \
+	rm -rf /var/lib/apt/lists/* 
 
 # Add scripts to image
 COPY scripts /opt/
