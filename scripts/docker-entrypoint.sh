@@ -52,6 +52,12 @@ function initAdIntegration {
     export AD_JOIN_USER
     export AD_DOMAIN_CONTROLLER
     export AD_OPSI_GROUP
+    export SAMBA_LISTEN_IP
+
+    # Check if samba listen ip is set
+    if [[ -z "${SAMBA_LISTEN_IP}" ]]; then
+        SAMBA_LISTEN_IP="all"
+    fi
 
     # Apply templates
     printInfo "Domain-Join: Applying template configuration files"
