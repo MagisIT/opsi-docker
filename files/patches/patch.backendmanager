@@ -1,0 +1,80 @@
+--- BackendManager.py.orig	2020-04-06 18:06:48.000000000 +0200
++++ BackendManager.py	2020-08-15 14:56:34.687527988 +0200
+@@ -56,6 +56,11 @@
+ 	import grp
+ 	import PAM
+ 	import pwd
++
++	from ctypes import *
++	from ctypes.util import find_library
++	from copy import copy
++
+ elif os.name == 'nt':
+ 	import win32net
+ 	import win32security
+@@ -547,6 +552,13 @@
+ 		self._host = None
+ 		self._authenticated = False
+ 
++		if os.name == 'posix':
++			self._libc = cdll.LoadLibrary(find_library('libc'))
++
++			self._getgrouplist = self._libc.getgrouplist
++			self._getgrouplist.argtypes = [c_char_p, c_uint, POINTER(c_uint), POINTER(c_int)]
++			self._getgrouplist.restype = c_int32
++
+ 		if os.path.exists("/etc/pam.d/opsi-auth"):
+ 			# Prefering our own - if present.
+ 			self._pamService = 'opsi-auth'
+@@ -725,6 +737,41 @@
+ 		except Exception as e:
+ 			raise BackendAuthenticationError(u"Win32security authentication failed for user '%s': %s" % (self._username, e))
+ 
++	def _getGroupsOfUser(self, username):
++		logger.debug(u"Attempting to get group information of {0!r}...", self._username)
++
++		# Get user information
++		user = pwd.getpwnam(username)
++
++		ngroups = c_int(2)
++		groups = (c_uint * ngroups.value)()
++
++		while True:
++			max_ngroups = copy(ngroups)
++
++			# Call getgrouplist c function
++			result = self._getgrouplist(user.pw_name, user.pw_gid, cast(groups, POINTER(c_uint)), byref(max_ngroups))
++
++			if result >= 0:
++				ngroups = max_ngroups
++
++				groups = (c_uint * ngroups.value)(*(groups[:ngroups.value]))
++				break
++
++			# Handle the case when systems doens't update ngroups
++			if ngroups == max_ngroups:
++				ngroups = c_int(2 * max_ngroups.value)
++			else:
++				ngroups = max_ngroups
++
++			# Resize group array to new ngroups size
++			groups = (c_uint * ngroups.value)(*(groups[:ngroups.value]))
++
++		group_names = [forceUnicode(grp.getgrgid(group)[0]) for group in groups]
++		logger.debug(u"User {0!r} is member of groups {1}", username, group_names)
++
++		return group_names
++
+ 	def _pamAuthenticateUser(self):
+ 		'''
+ 		Authenticate a user by PAM (Pluggable Authentication Modules).
+@@ -784,7 +831,8 @@
+ 				primaryGroup = forceUnicode(grp.getgrgid(pwd.getpwnam(self._username)[3])[0])
+ 				logger.debug(u"Primary group of user {0!r} is {1!r}", self._username, primaryGroup)
+ 
+-				self._userGroups = set(forceUnicode(group[0]) for group in grp.getgrall() if self._username in group[3])
++				self._userGroups = set(self._getGroupsOfUser(self._username))
++				#self._userGroups = set(forceUnicode(group[0]) for group in grp.getgrall() if self._username in group[3])
+ 				self._userGroups.add(primaryGroup)
+ 				logger.debug(u"User {0!r} is member of groups: {1}", self._username, self._userGroups)
+ 		except Exception as e:

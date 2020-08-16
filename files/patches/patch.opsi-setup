@@ -1,0 +1,14 @@
+--- opsi-setup.orig	2020-08-08 19:47:08.824559639 +0000
++++ opsi-setup	2020-08-08 19:48:48.133289360 +0000
+@@ -925,7 +925,10 @@
+		makeCert()
+		setPasswdRights()
+		setRights(OPSICONFD_CERTFILE)
+-		restartServices()
++
++		if "disableRestart" not in unattendedConfiguration:
++			restartServices()
++
+		return
+
+	consoleLevel = logger.getConsoleLevel()

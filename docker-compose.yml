@@ -1,0 +1,108 @@
+version: "2.4"
+services:
+    opsi-mariadb:
+      image: mariadb:10.5.4-focal
+      container_name: opsi-mariadb
+      volumes:
+          - opsi-mariadb-data:/var/lib/mysql
+      environment:
+          - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+          - MYSQL_DATABASE=${MYSQL_DATABASE}
+          - MYSQL_USER=${MYSQL_USER}
+          - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+          - TZ=${TZ}
+      networks:
+        opsi-network:
+          aliases:
+            - database
+      restart: always
+      command: --sql-mode=""
+
+    opsi-server:
+      image: opsi-server:latest
+      container_name: opsi-server
+      hostname: ${HOSTNAME}
+      dns: 10.252.100.1
+      volumes:
+        - opsi-server-data:/var/lib/opsi
+        - opsi-server-config-opsi:/etc/opsi
+        - opsi-server-config-samba:/etc/samba
+        - opsi-server-tftpboot:/tftpboot
+        - opsi-server-log-opsi:/var/log/opsi
+      environment:
+        - HOST_IP=${HOST_IP}
+        - DOMAIN=${DOMAIN}
+        - OPSI_USE_HOSTNAME=${OPSI_USE_HOSTNAME}
+
+        - MYSQL_USER=root
+        - MYSQL_PASSWORD=${MYSQL_ROOT_PASSWORD}
+        - MYSQL_DATABASE=${MYSQL_DATABASE}
+        - MYSQL_HOST=database
+
+        - CERT_LOCALITY=${CERT_LOCALITY}
+        - CERT_ORGANIZATION=${CERT_ORGANIZATION}
+        - CERT_COUNTRY=${CERT_COUNTRY}
+        - CERT_STATE=${CERT_STATE}
+
+        - OPSI_USER=${OPSI_USER}
+        - OPSI_USER_PASSWORD=${OPSI_USER_PASSWORD}
+        - OPSI_PCPATCH_PASSWORD=${OPSI_PCPATCH_PASSWORD}
+
+        - DISABLE_UIB_WINDOWS_REPOSITORY=${DISABLE_UIB_WINDOWS_REPOSITORY}
+        - DISABLE_UIB_LINUX_REPOSITORY=${DISABLE_UIB_LINUX_REPOSITORY}
+        - DISABLE_UIB_LOCAL_IMAGE_REPOSITORY=${DISABLE_UIB_LOCAL_IMAGE_REPOSITORY}
+        - SKIP_PACKAGE_UPDATE_ON_START=${SKIP_PACKAGE_UPDATE_ON_START}
+
+        - ENABLE_AD=${ENABLE_AD}
+        - AD_DOMAIN=${AD_DOMAIN}
+        - AD_REALM=${AD_REALM}
+        - AD_DOMAIN_CONTROLLER=${AD_DOMAIN_CONTROLLER}
+        - AD_JOIN_USER=${AD_JOIN_USER}
+        - AD_JOIN_PASSWORD=${AD_JOIN_PASSWORD}
+        - AD_OPSI_GROUP=${AD_OPSI_GROUP}
+
+        - TZ=${TZ}
+      ports:
+        - "4447:4447"
+        - "445:445"
+        - "2222:22"
+        - "69:69/udp"
+      networks:
+        opsi-network:
+          aliases:
+            - server
+
+    opsi-ipv6nat:
+      image: robbertkl/ipv6nat
+      container_name: opsi-ipv6nat
+      network_mode: "host"
+      privileged: true
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock:ro
+        - /lib/modules:/lib/modules:ro
+      environment:
+        - TZ=${TZ}
+      depends_on:
+        - opsi-mariadb
+        - opsi-server
+      restart: always
+
+volumes:
+  opsi-mariadb-data:
+  opsi-server-data:
+  opsi-server-config-opsi:
+  opsi-server-config-samba:
+  opsi-server-tftpboot:
+  opsi-server-log-opsi:
+
+networks:
+  opsi-network:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: br-opsi
+    enable_ipv6: true
+    ipam:
+      driver: default
+      config:
+        - subnet: ${IPv4_NETWORK}
+        - subnet: ${IPv6_NETWORK}
