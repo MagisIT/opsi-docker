@@ -16,4 +16,4 @@ user_setCredentials    : sys_group(opsiadmin); opsi_depotserver; {{if eq .ENABLE
 user_getCredentials    : opsi_depotserver; opsi_client
 .*_get.*               : sys_group(opsiadmin); opsi_depotserver; opsi_client; {{if eq .ENABLE_AD "true"}} sys_group({{ .AD_OPSI_GROUP }}) {{end}}
 get(Raw){0,1}Data      : sys_group(opsiadmin); opsi_depotserver; {{if eq .ENABLE_AD "true"}} sys_group({{ .AD_OPSI_GROUP }}) {{end}}
-.*                     : sys_group(opsiadmin); opsi_depotserver; {{if eq .ENABLE_AD "true"}} sys_group({{ .AD_OPSI_GROUP }}) {{end}}
+.*                     : sys_group(opsiadmin); opsi_depotserver; self; {{if eq .ENABLE_AD "true"}} sys_group({{ .AD_OPSI_GROUP }}) {{end}}
