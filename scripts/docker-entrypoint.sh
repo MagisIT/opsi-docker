@@ -20,7 +20,10 @@ function initialize {
 
     # Configure MySQL
     printInfo "Runnig opsi-setup: Configure MySQL database…"
-    opsi-setup --configure-mysql --unattended="{\"dbAdminPass\": \"${MYSQL_PASSWORD}\", \"dbAdminUser\": \"${MYSQL_USER}\", \"database\": \"${MYSQL_DATABASE}\", \"address\": \"${MYSQL_HOST}\"}"
+    if ! gucci /templates/mysql.tpl > /etc/opsi/backends/mysql.conf; then
+        printError "Cannot apply template to backends/mysql.conf"
+        exit 1
+    fi
 
     # Was there any error during setup
     if [[ $? != 0 ]]; then

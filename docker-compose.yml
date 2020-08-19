@@ -6,7 +6,7 @@ services:
       volumes:
           - opsi-mariadb-data:/var/lib/mysql
       environment:
-          - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+          - MYSQL_RANDOM_ROOT_PASSWORD=yes
           - MYSQL_DATABASE=${MYSQL_DATABASE}
           - MYSQL_USER=${MYSQL_USER}
           - MYSQL_PASSWORD=${MYSQL_PASSWORD}
@@ -36,8 +36,8 @@ services:
         - SSH_PORT=${SSH_PORT}
         - SAMBA_LISTEN_IP=${SAMBA_LISTEN_IP}
 
-        - MYSQL_USER=root
-        - MYSQL_PASSWORD=${MYSQL_ROOT_PASSWORD}
+        - MYSQL_USER=${MYSQL_USER}
+        - MYSQL_PASSWORD=${MYSQL_PASSWORD}
         - MYSQL_DATABASE=${MYSQL_DATABASE}
         - MYSQL_HOST=database
 

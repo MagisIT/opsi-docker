@@ -35,7 +35,7 @@ RUN echo "opsiconfd opsiconfd/cert_locality string Internet" | debconf-set-selec
 
 # Install required basis packages
 RUN apt-get update && \
-	apt-get -y install supervisor rsyslog netcat wget host pigz samba samba-common smbclient cifs-utils \
+	apt-get -y install supervisor rsyslog netcat-openbsd wget host pigz samba samba-common smbclient cifs-utils \
 	openssh-server debconf-utils cpio ssh passwd patch winbind libnss-winbind libpam-winbind cron acl \
 	opsi-tftpd-hpa opsi-server opsi-configed opsi-windows-support && \
 	wget -q https://github.com/noqcks/gucci/releases/download/${GUCCI_VERSION}/gucci-v${GUCCI_VERSION}-linux-amd64 && \
@@ -59,12 +59,6 @@ COPY files/system/opsi-package-updater-cron /etc/cron.d/opsi-package-updater
 
 # Install CronJob
 RUN chmod 0644 /etc/cron.d/opsi-package-updater && crontab /etc/cron.d/opsi-package-updater
-
-# Apply patch
-# Solves an error because OPSI isn't allowing the Docker-IP to access the MySQL Server with the OPSI-User
-# When running OPSI in docker the MySQL-Server is normally only rechable in the internal docker network
-# so we allow any host (%) to connect with the opsi user
-RUN patch /usr/lib/python2.7/dist-packages/OPSI/Util/Task/ConfigureBackend/MySQL.py < /opt/patch.mysql.installer
 
 # Apply patch
 # After certificate renew the opsi-setup script tries to restart the opsi services using systemd
