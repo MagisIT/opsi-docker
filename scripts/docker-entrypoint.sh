@@ -19,6 +19,11 @@ function initialize {
     mv /etc/samba-default/* /etc/samba/
 
     # Configure MySQL
+    export MYSQL_HOST
+    export MYSQL_DATABASE
+    export MYSQL_USER
+    export MYSQL_PASSWORD
+
     printInfo "Runnig opsi-setup: Configure MySQL database…"
     if ! gucci /templates/mysql.tpl > /etc/opsi/backends/mysql.conf; then
         printError "Cannot apply template to backends/mysql.conf"
