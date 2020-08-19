@@ -226,6 +226,10 @@ else
     /usr/bin/opsi-package-updater -v update
 fi
 
+# Set SSH port by default to 2222 if not specified. This is necessary if the opsi container is running in network=host mode
+SSH_PORT=${SSH_PORT:-2222}
+sed -i "s/#Port 22/Port ${SSH_PORT}/g" /etc/ssh/sshd_config
+
 # Start OPSI
 printInfo "Starting Opsi…"
 exec supervisord -c /etc/supervisor.conf

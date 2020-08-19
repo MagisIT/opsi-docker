@@ -33,6 +33,8 @@ services:
         - HOST_IP=${HOST_IP}
         - DOMAIN=${DOMAIN}
         - OPSI_USE_HOSTNAME=${OPSI_USE_HOSTNAME}
+        - SSH_PORT=${SSH_PORT}
+        - SAMBA_LISTEN_IP=${SAMBA_LISTEN_IP}
 
         - MYSQL_USER=root
         - MYSQL_PASSWORD=${MYSQL_ROOT_PASSWORD}
@@ -47,7 +49,6 @@ services:
         - OPSI_USER=${OPSI_USER}
         - OPSI_USER_PASSWORD=${OPSI_USER_PASSWORD}
         - OPSI_PCPATCH_PASSWORD=${OPSI_PCPATCH_PASSWORD}
-        - SAMBA_LISTEN_IP=${SAMBA_LISTEN_IP}
 
         - DISABLE_UIB_WINDOWS_REPOSITORY=${DISABLE_UIB_WINDOWS_REPOSITORY}
         - DISABLE_UIB_LINUX_REPOSITORY=${DISABLE_UIB_LINUX_REPOSITORY}
@@ -66,7 +67,7 @@ services:
       ports:
         - "4447:4447"
         - "445:445"
-        - "2222:22"
+        - "2222:${SSH_PORT}"
         - "69:69/udp"
       networks:
         opsi-network:
