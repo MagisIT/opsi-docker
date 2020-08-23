@@ -56,6 +56,7 @@ RUN chmod +x /opt/*.sh
 COPY files/patches /opt/
 COPY files/templates /templates
 COPY files/system/opsi-package-updater-cron /etc/cron.d/opsi-package-updater
+COPY files/system/tftpd.map /etc/tftpd.map
 
 # Install CronJob
 RUN chmod 0644 /etc/cron.d/opsi-package-updater && crontab /etc/cron.d/opsi-package-updater

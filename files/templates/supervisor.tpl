@@ -32,7 +32,7 @@ startsecs = 2
 autostart = true
 autorestart	= true
 process_name = tftpserver
-command	= /usr/sbin/in.tftpd -v -L --listen --address :69 --secure /tftpboot/
+command	= /usr/sbin/in.tftpd -v -L --listen --address :69 --secure /tftpboot/ -m /etc/tftpd.map
 
 [program:ssh]
 startsecs = 2
