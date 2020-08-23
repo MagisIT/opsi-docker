@@ -1,1 +1,1 @@
-0 3 * * * root /usr/bin/opsi-package-updater update
+0 3 * * * root /bin/bash -c "/usr/bin/opsi-set-rights; /usr/bin/opsi-package-updater update"

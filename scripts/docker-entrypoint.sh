@@ -97,8 +97,21 @@ function initAdIntegration {
     # Modify opsi-set-rights to set group acls for our AD_OPSI_GROUP
     # This would allow access using samba to the opsi shares
     # Yeah, I know it's kind of hacky, so please forgive me ;)
+
+    # Reset permissions before applying new onesetfacl -R -b
+    echo "setfacl -R -b /var/lib/opsi" >> /usr/bin/opsi-set-rights
+    echo "setfacl -R -b /var/log/opsi" >> /usr/bin/opsi-set-rights
+    echo "setfacl -R -b /etc/opsi" >> /usr/bin/opsi-set-rights
+
+    # Set ACLs for OPSI Group
     echo "setfacl -R -m g:\"${AD_OPSI_GROUP}\":rwx /var/lib/opsi" >> /usr/bin/opsi-set-rights
     echo "setfacl -R -m g:\"${AD_OPSI_GROUP}\":rwx /var/log/opsi" >> /usr/bin/opsi-set-rights
+    echo "setfacl -R -m g:\"${AD_OPSI_GROUP}\":rwx /etc/opsi" >> /usr/bin/opsi-set-rights
+
+    # We need default ACLs as well, because some tools like opsi-product-manager doesn't call the opsi-set-rights script
+    echo "setfacl -R -m d:g:\"${AD_OPSI_GROUP}\":rwx /var/lib/opsi" >> /usr/bin/opsi-set-rights
+    echo "setfacl -R -m d:g:\"${AD_OPSI_GROUP}\":rwx /var/log/opsi" >> /usr/bin/opsi-set-rights
+    echo "setfacl -R -m d:g:\"${AD_OPSI_GROUP}\":rwx /etc/opsi" >> /usr/bin/opsi-set-rights
 
     # Wait until domain controller is rechable
     printInfo "Domain-Join: Wait until Domain Controller is rechable"
